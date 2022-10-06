@@ -35,6 +35,15 @@ const [product, setProduct] = useState('');
 const [amount, setAmount] = useState('');
 const [items, setItems] = useState([]);
 
+useEffect(() => {
+  const itemsRef = ref(database, 'items/');
+  onValue(itemsRef, (snapshot) => {
+    const data = snapshot.val();
+    const items = data ? Object.keys(data).map(key => ({ key, ...data[key] })) : [];
+    setItems(items);
+  });
+}, []);
+
 const saveProduct = () => {
   push(
     ref(database, 'items/'),
@@ -42,18 +51,9 @@ const saveProduct = () => {
   );
 }
 
-useEffect(() => {
-  const itemsRef = ref(database, 'items/');
-  onValue(itemsRef, (snapshot) => {
-    const data = snapshot.val();
-    setItems(Object.values(data));
-    console.log((Object.values(data)))
-  })
-}, []);
-
-const deleteProduct = (item) => {
+const deleteProduct = (key) => {
   remove(
-    ref(database, 'items/' + item.Key),
+    ref(database, 'items/' + key),
   )
 }
 
@@ -101,7 +101,7 @@ const listSeparator = () => {
 
       <FlatList
         style={ styles.list }
-        keyExtractor={ item => item.Key }
+        keyExtractor={ item => item.key }
         renderItem={ ({ item }) => 
         <View style={ styles.listcontainer }>
           <Text>
@@ -110,7 +110,7 @@ const listSeparator = () => {
             { item.amount }
           </Text>
           <Text style={{ color: '#0000ff' }} 
-            onPress={() => deleteProduct(item.Key)}> Bought</Text>
+            onPress={() => deleteProduct(item.key)}> Bought</Text>
             </View>}
       data={ items }
       ItemSeparatorComponent={ listSeparator }
@@ -154,7 +154,7 @@ text : {
     marginBottom: 4,
   },
 list : {
-    fontSize: 20,
+    fontSize: 25,
     textAlign: 'center',
     marginTop: 20
   },
